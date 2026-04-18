@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Restaurant Management</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#f5f5f5;min-height:100vh}
+    .app{max-width:900px;margin:0 auto;padding:1.5rem}
+    .header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e0e0e0;background:#fff;padding:1rem 1.5rem;border-radius:12px;margin-bottom:1rem}
+    .header-icon{width:40px;height:40px;background:#e8f4fd;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
+    .header h1{font-size:22px;font-weight:600;color:#1a1a1a}
+    .header p{font-size:13px;color:#888}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:#639922;display:inline-block;margin-right:6px}
+    .tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:#fff;padding:4px;border-radius:8px;border:1px solid #e0e0e0}
+    .tab{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-size:14px;font-weight:500;color:#888;transition:all 0.15s}
+    .tab.active{background:#f0f0f0;color:#1a1a1a;border:1px solid #ddd}
+    .section{display:none}
+    .section.active{display:block}
+    .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+    .card-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:1rem}
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+    .menu-item{background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.15s}
+    .menu-item:hover{border-color:#2196F3;background:#e8f4fd}
+    .menu-item.selected{border-color:#2196F3;background:#e8f4fd}
+    .item-name{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+    .item-id{font-size:11px;color:#aaa;margin-bottom:6px}
+    .item-price{font-size:16px;font-weight:600;color:#2e7d32}
+    .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+    .badge-veg{background:#e8f5e9;color:#2e7d32}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .form-group{display:flex;flex-direction:column;gap:6px}
+    .form-group label{font-size:12px;font-weight:600;color:#555}
+    .form-group input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;outline:none}
+    .form-group input:focus{border-color:#2196F3;box-shadow:0 0 0 3px rgba(33,150,243,0.1)}
+    .selected-item-preview{background:#e8f4fd;border:1px solid #90caf9;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#1565c0}
+    .btn{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid #ddd;background:#fff;color:#1a1a1a;transition:all 0.15s}
+    .btn:hover{background:#f0f0f0}
+    .btn-primary{background:#1565c0;color:#fff;border-color:#1565c0}
+    .btn-primary:hover{background:#0d47a1}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .msg-success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px}
+    .msg-error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px}
+    .orders-list{display:flex;flex-direction:column;gap:10px}
+    .order-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:16px}
+    .order-num{font-size:13px;font-weight:600;color:#888;min-width:70px}
+    .order-info{flex:1}
+    .order-name{font-size:14px;font-weight:600;color:#1a1a1a}
+    .order-meta{font-size:12px;color:#888;margin-top:2px}
+    .order-amount{font-size:15px;font-weight:600;color:#1a1a1a}
+    .status{display:inline-block;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
+    .status-pending{background:#fff8e1;color:#f57f17}
+    .status-preparing{background:#e3f2fd;color:#1565c0}
+    .status-completed{background:#e8f5e9;color:#2e7d32}
+    .status-cancelled{background:#ffebee;color:#c62828}
+    .status-served{background:#f3e5f5;color:#6a1b9a}
+    .empty{text-align:center;padding:3rem;color:#aaa;font-size:14px}
+    .loading{text-align:center;padding:2rem;color:#888;font-size:14px}
+    .qty-control{display:flex;align-items:center;gap:8px}
+    .qty-btn{width:32px;height:32px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;line-height:1}
+    .qty-btn:hover{background:#f0f0f0}
+    .qty-val{font-size:15px;font-weight:600;min-width:24px;text-align:center;color:#1a1a1a}
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">🍽️</div>
+    <div style="flex:1">
+      <h1>Restaurant Management</h1>
+      <p>
+        <span class="status-dot" id="statusDot" style="background:#aaa"></span>
+        <span id="statusText">Connecting...</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('menu')">🍴 Menu</button>
+    <button class="tab" onclick="switchTab('order')">🛒 Place Order</button>
+    <button class="tab" onclick="switchTab('orders')">📋 View Orders</button>
+  </div>
+
+  <!-- MENU TAB -->
+  <div class="section active" id="tab-menu">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <p class="card-title" style="margin:0">Available Items</p>
+        <button class="btn btn-sm" onclick="loadMenu()">🔄 Refresh</button>
+      </div>
+      <div id="menuContent"><div class="loading">Loading menu...</div></div>
+    </div>
+  </div>
+
+  <!-- ORDER TAB -->
+  <div class="section" id="tab-order">
+    <div class="card">
+      <p class="card-title">New Order</p>
+      <div id="selectedPreview" style="display:none" class="selected-item-preview"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Table Number</label>
+          <input type="number" id="table_id" placeholder="e.g. 1" min="1">
+        </div>
+        <div class="form-group">
+          <label>Item ID</label>
+          <input type="number" id="item_id" placeholder="e.g. 3" min="1" oninput="previewItem()">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Quantity</label>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(-1)">−</button>
+          <span class="qty-val" id="qtyVal">1</span>
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="placeOrder()">Place Order</button>
+      <div id="orderMsg"></div>
+    </div>
+
+    <!-- Quick Menu Hint -->
+    <div class="card">
+      <p class="card-title" style="font-size:13px;color:#888;margin-bottom:12px">
+        Quick select from menu
+      </p>
+      <div id="quickMenuHint" class="menu-grid"></div>
+    </div>
+  </div>
+
+  <!-- ORDERS TAB -->
+  <div class="section" id="tab-orders">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <p class="card-title" style="margin:0">All Orders</p>
+        <button class="btn btn-sm" onclick="loadOrders()">🔄 Refresh</button>
+      </div>
+      <div id="ordersContent"><div class="empty">Click refresh to load orders</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = "http://localhost:5000";
+  let menuData = [];
+  let qty = 1;
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['menu','order','orders'][i] === name);
+    });
+    document.querySelectorAll('.section').forEach((s, i) => {
+      s.classList.toggle('active', ['tab-menu','tab-order','tab-orders'][i] === 'tab-' + name);
+    });
+    if (name === 'orders') loadOrders();
+  }
+
+  function setStatus(ok) {
+    document.getElementById('statusDot').style.background = ok ? '#639922' : '#e53935';
+    document.getElementById('statusText').textContent = ok ? 'Connected to server' : 'Server offline — run node server.js';
+  }
+
+  function loadMenu() {
+    document.getElementById('menuContent').innerHTML = '<div class="loading">Loading...</div>';
+    fetch(API + '/menu')
+      .then(r => r.json())
+      .then(data => {
+        menuData = data;
+        setStatus(true);
+        if (!data.length) {
+          document.getElementById('menuContent').innerHTML = '<div class="empty">No menu items found. Add items in MySQL Workbench first.</div>';
+          return;
+        }
+        let html = '<div class="menu-grid">';
+        data.forEach(item => {
+          html += `
+            <div class="menu-item" onclick="selectItem(${item.item_id})">
+              <div class="item-id">ID: ${item.item_id}</div>
+              <div class="item-name">${item.item_name}</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                <span class="item-price">₹${parseFloat(item.price).toFixed(2)}</span>
+                ${item.is_vegetarian ? '<span class="badge badge-veg">Veg</span>' : ''}
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+        document.getElementById('menuContent').innerHTML = html;
+        renderQuickHint(data);
+      })
+      .catch(() => {
+        setStatus(false);
+        document.getElementById('menuContent').innerHTML = '<div class="empty">Cannot connect to server at localhost:5000</div>';
+      });
+  }
+
+  function renderQuickHint(data) {
+    let html = '';
+    data.slice(0, 6).forEach(item => {
+      html += `
+        <div class="menu-item" onclick="selectItem(${item.item_id})">
+          <div style="color:#aaa;font-size:11px">ID: ${item.item_id}</div>
+          <div style="font-weight:600;font-size:13px;color:#1a1a1a">${item.item_name}</div>
+          <div style="color:#2e7d32;font-weight:600;margin-top:4px">₹${parseFloat(item.price).toFixed(2)}</div>
+        </div>`;
+    });
+    document.getElementById('quickMenuHint').innerHTML = html;
+  }
+
+  function selectItem(id) {
+    document.getElementById('item_id').value = id;
+    previewItem();
+    switchTab('order');
+  }
+
+  function previewItem() {
+    const id = parseInt(document.getElementById('item_id').value);
+    const item = menuData.find(i => i.item_id === id);
+    const prev = document.getElementById('selectedPreview');
+    if (item) {
+      prev.style.display = 'block';
+      prev.textContent = '✓ ' + item.item_name + ' — ₹' + parseFloat(item.price).toFixed(2) + ' (ID: ' + id + ')';
+    } else {
+      prev.style.display = 'none';
+    }
+  }
+
+  function changeQty(d) {
+    qty = Math.max(1, qty + d);
+    document.getElementById('qtyVal').textContent = qty;
+  }
+
+  function placeOrder() {
+    const table_id = document.getElementById('table_id').value;
+    const item_id  = document.getElementById('item_id').value;
+    const msgEl    = document.getElementById('orderMsg');
+    if (!table_id || !item_id) {
+      msgEl.innerHTML = '<div class="msg-error">Please fill in Table Number and Item ID.</div>';
+      return;
+    }
+    msgEl.innerHTML = '<div class="loading">Placing order...</div>';
+    fetch(API + '/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table_id, item_id, quantity: qty })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        msgEl.innerHTML = '<div class="msg-error">' + data.error + '</div>';
+      } else {
+        msgEl.innerHTML = '<div class="msg-success">✓ ' + (data.message || 'Order placed!') + '</div>';
+        document.getElementById('table_id').value = '';
+        document.getElementById('item_id').value = '';
+        document.getElementById('selectedPreview').style.display = 'none';
+        qty = 1;
+        document.getElementById('qtyVal').textContent = '1';
+      }
+    })
+    .catch(() => msgEl.innerHTML = '<div class="msg-error">Failed to connect to server.</div>');
+  }
+
+  function loadOrders() {
+    document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading orders...</div>';
+    fetch(API + '/orders')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.length) {
+          document.getElementById('ordersContent').innerHTML = '<div class="empty">No orders yet.</div>';
+          return;
+        }
+        let html = '<div class="orders-list">';
+        data.forEach(o => {
+          const st = o.status || 'pending';
+          html += `
+            <div class="order-card">
+              <div class="order-num">Order #${o.order_id}</div>
+              <div class="order-info">
+                <div class="order-name">${o.item_name || 'Unknown item'}</div>
+                <div class="order-meta">Table ${o.table_id} &nbsp;|&nbsp; Qty: ${o.quantity}</div>
+              </div>
+              <div style="text-align:right">
+                <div class="order-amount">₹${parseFloat(o.total_amount || 0).toFixed(2)}</div>
+                <div style="margin-top:4px"><span class="status status-${st}">${st}</span></div>
+              </div>
+            </div>`;
+        });
+        html += '</div>';
+        document.getElementById('ordersContent').innerHTML = html;
+      })
+      .catch(() => {
+        document.getElementById('ordersContent').innerHTML = '<div class="empty">Cannot load orders. Is the server running?</div>';
+      });
+  }
+
+  loadMenu();
+</script>
+
+</body>
+</html>

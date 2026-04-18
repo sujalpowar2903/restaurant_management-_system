@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "sujal",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "MySQl Local",
+            "password": "sujal2903",
+            "database": "restaurant_management",
+            "username": "root"
+        }
+    ]
+}
