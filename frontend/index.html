@@ -1,142 +1,653 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Restaurant Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;background:#f5f5f5;min-height:100vh}
-    .app{max-width:900px;margin:0 auto;padding:1.5rem}
-    .header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #e0e0e0;background:#fff;padding:1rem 1.5rem;border-radius:12px;margin-bottom:1rem}
-    .header-icon{width:40px;height:40px;background:#e8f4fd;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
-    .header h1{font-size:22px;font-weight:600;color:#1a1a1a}
-    .header p{font-size:13px;color:#888}
-    .status-dot{width:8px;height:8px;border-radius:50%;background:#639922;display:inline-block;margin-right:6px}
-    .tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:#fff;padding:4px;border-radius:8px;border:1px solid #e0e0e0}
-    .tab{flex:1;padding:10px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-size:14px;font-weight:500;color:#888;transition:all 0.15s}
-    .tab.active{background:#f0f0f0;color:#1a1a1a;border:1px solid #ddd}
-    .section{display:none}
-    .section.active{display:block}
-    .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
-    .card-title{font-size:15px;font-weight:600;color:#1a1a1a;margin-bottom:1rem}
-    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-    .menu-item{background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:12px;cursor:pointer;transition:all 0.15s}
-    .menu-item:hover{border-color:#2196F3;background:#e8f4fd}
-    .menu-item.selected{border-color:#2196F3;background:#e8f4fd}
-    .item-name{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
-    .item-id{font-size:11px;color:#aaa;margin-bottom:6px}
-    .item-price{font-size:16px;font-weight:600;color:#2e7d32}
-    .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
-    .badge-veg{background:#e8f5e9;color:#2e7d32}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-    .form-group{display:flex;flex-direction:column;gap:6px}
-    .form-group label{font-size:12px;font-weight:600;color:#555}
-    .form-group input{padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;outline:none}
-    .form-group input:focus{border-color:#2196F3;box-shadow:0 0 0 3px rgba(33,150,243,0.1)}
-    .selected-item-preview{background:#e8f4fd;border:1px solid #90caf9;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#1565c0}
-    .btn{padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid #ddd;background:#fff;color:#1a1a1a;transition:all 0.15s}
-    .btn:hover{background:#f0f0f0}
-    .btn-primary{background:#1565c0;color:#fff;border-color:#1565c0}
-    .btn-primary:hover{background:#0d47a1}
-    .btn-sm{padding:6px 12px;font-size:12px}
-    .msg-success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px}
-    .msg-error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px}
-    .orders-list{display:flex;flex-direction:column;gap:10px}
-    .order-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:16px}
-    .order-num{font-size:13px;font-weight:600;color:#888;min-width:70px}
-    .order-info{flex:1}
-    .order-name{font-size:14px;font-weight:600;color:#1a1a1a}
-    .order-meta{font-size:12px;color:#888;margin-top:2px}
-    .order-amount{font-size:15px;font-weight:600;color:#1a1a1a}
-    .status{display:inline-block;font-size:11px;padding:3px 8px;border-radius:4px;font-weight:600}
-    .status-pending{background:#fff8e1;color:#f57f17}
-    .status-preparing{background:#e3f2fd;color:#1565c0}
-    .status-completed{background:#e8f5e9;color:#2e7d32}
-    .status-cancelled{background:#ffebee;color:#c62828}
-    .status-served{background:#f3e5f5;color:#6a1b9a}
-    .empty{text-align:center;padding:3rem;color:#aaa;font-size:14px}
-    .loading{text-align:center;padding:2rem;color:#888;font-size:14px}
-    .qty-control{display:flex;align-items:center;gap:8px}
-    .qty-btn{width:32px;height:32px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;line-height:1}
-    .qty-btn:hover{background:#f0f0f0}
-    .qty-val{font-size:15px;font-weight:600;min-width:24px;text-align:center;color:#1a1a1a}
+    :root {
+      --bg:        #0c0b09;
+      --surface:   #151310;
+      --card:      #1c1812;
+      --card2:     #221e14;
+      --gold:      #c8933a;
+      --gold-lt:   #e5b96a;
+      --gold-dim:  rgba(200,147,58,0.18);
+      --cream:     #f0e6d0;
+      --muted:     #7a6e5e;
+      --border:    rgba(200,147,58,0.16);
+      --border2:   rgba(255,255,255,0.06);
+      --green:     #4caf78;
+      --red:       #e05252;
+      --blue:      #5b9bd5;
+      --amber:     #e8a838;
+      --purple:    #a878d8;
+      --radius:    14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Ambient background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(200,147,58,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(200,147,58,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── Hero Header ── */
+    .hero {
+      position: relative;
+      height: 220px;
+      margin: 0 -20px 32px;
+      overflow: hidden;
+    }
+
+    .hero-imgs {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+      gap: 2px;
+    }
+
+    .hero-imgs img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: brightness(0.35) saturate(1.1);
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--bg) 0%, rgba(12,11,9,0.55) 55%, transparent 100%);
+    }
+
+    .hero-content {
+      position: absolute;
+      bottom: 28px; left: 32px;
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+    }
+
+    .hero-logo {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 8px 24px rgba(200,147,58,0.35);
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 5px;
+    }
+
+    .status-pill {
+      position: absolute;
+      top: 20px; right: 24px;
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(12,11,9,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #aaa;
+      transition: background 0.3s;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 5px;
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .tab:hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+
+    .tab.active {
+      background: linear-gradient(135deg, rgba(200,147,58,0.2), rgba(200,147,58,0.1));
+      color: var(--gold-lt);
+      border: 1px solid rgba(200,147,58,0.3);
+      font-weight: 600;
+    }
+
+    .tab-icon { font-size: 15px; }
+
+    /* ── Sections ── */
+    .section { display: none; animation: fadeUp 0.3s ease both; }
+    .section.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Refresh Button ── */
+    .btn-refresh {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-refresh:hover { color: var(--gold-lt); border-color: var(--gold); }
+
+    /* ── Menu Grid ── */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .menu-item {
+      background: var(--card2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,147,58,0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .menu-item:hover { border-color: rgba(200,147,58,0.4); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .menu-item:hover::after { opacity: 1; }
+    .menu-item.selected { border-color: var(--gold); background: rgba(200,147,58,0.1); }
+
+    .item-id {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .item-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .item-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-price {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gold-lt);
+    }
+
+    .badge-veg {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: rgba(76,175,120,0.15);
+      color: var(--green);
+      border: 1px solid rgba(76,175,120,0.25);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Order Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 7px; }
+
+    .form-group label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .form-group input {
+      background: var(--card2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input::placeholder { color: var(--muted); }
+    .form-group input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,147,58,0.12); }
+
+    .selected-preview {
+      background: rgba(200,147,58,0.1);
+      border: 1px solid rgba(200,147,58,0.3);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--gold-lt);
+      display: none;
+    }
+
+    /* ── Qty Control ── */
+    .qty-wrap { margin-bottom: 20px; }
+    .qty-wrap label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .qty-control { display: flex; align-items: center; gap: 0; width: fit-content; }
+
+    .qty-btn {
+      width: 38px; height: 38px;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+
+    .qty-btn:first-child { border-radius: 10px 0 0 10px; }
+    .qty-btn:last-child  { border-radius: 0 10px 10px 0; }
+    .qty-btn:hover { background: var(--gold-dim); color: var(--gold-lt); border-color: var(--gold); }
+
+    .qty-val {
+      width: 52px; height: 38px;
+      background: var(--card2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-left: none; border-right: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cream);
+    }
+
+    /* ── CTA Button ── */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+      color: #1a0e00;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,147,58,0.35); }
+    .btn-primary:active { transform: none; }
+
+    /* ── Messages ── */
+    .msg-success {
+      background: rgba(76,175,120,0.12);
+      border: 1px solid rgba(76,175,120,0.3);
+      color: var(--green);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .msg-error {
+      background: rgba(224,82,82,0.1);
+      border: 1px solid rgba(224,82,82,0.3);
+      color: var(--red);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loading::before {
+      content: '';
+      display: block;
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ── Orders List ── */
+    .orders-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .order-card {
+      background: var(--card2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .order-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+
+    .order-card.pending::before   { background: var(--amber); }
+    .order-card.preparing::before { background: var(--blue); }
+    .order-card.served::before    { background: var(--purple); }
+    .order-card.completed::before { background: var(--green); }
+    .order-card.cancelled::before { background: var(--red); }
+
+    .order-num {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      min-width: 70px;
+    }
+
+    .order-info { flex: 1; }
+
+    .order-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--cream);
+    }
+
+    .order-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .order-amount {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gold-lt);
+      text-align: right;
+    }
+
+    .status {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+
+    .status-pending   { background: rgba(232,168,56,0.15); color: var(--amber); border: 1px solid rgba(232,168,56,0.25); }
+    .status-preparing { background: rgba(91,155,213,0.15); color: var(--blue);  border: 1px solid rgba(91,155,213,0.25); }
+    .status-served    { background: rgba(168,120,216,0.15); color: var(--purple); border: 1px solid rgba(168,120,216,0.25); }
+    .status-completed { background: rgba(76,175,120,0.15); color: var(--green); border: 1px solid rgba(76,175,120,0.25); }
+    .status-cancelled { background: rgba(224,82,82,0.12);  color: var(--red);   border: 1px solid rgba(224,82,82,0.25); }
+
+    /* ── Divider label ── */
+    .divider-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .divider-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    @media (max-width: 540px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 1.7rem; }
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
 
 <div class="app">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-icon">🍽️</div>
-    <div style="flex:1">
-      <h1>Restaurant Management</h1>
-      <p>
-        <span class="status-dot" id="statusDot" style="background:#aaa"></span>
-        <span id="statusText">Connecting...</span>
-      </p>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-imgs">
+      <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80" alt="" />
+      <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80" alt="" />
+      <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80" alt="" />
+      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80" alt="" />
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-logo">🍽️</div>
+      <div>
+        <h1 class="hero-title">Restaurant Management</h1>
+        <p class="hero-sub">Operations Dashboard</p>
+      </div>
+    </div>
+    <div class="status-pill">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting…</span>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('menu')">🍴 Menu</button>
-    <button class="tab" onclick="switchTab('order')">🛒 Place Order</button>
-    <button class="tab" onclick="switchTab('orders')">📋 View Orders</button>
+    <button class="tab active" onclick="switchTab('menu')">
+      <span class="tab-icon">🍴</span> Menu
+    </button>
+    <button class="tab" onclick="switchTab('order')">
+      <span class="tab-icon">🛒</span> Place Order
+    </button>
+    <button class="tab" onclick="switchTab('orders')">
+      <span class="tab-icon">📋</span> View Orders
+    </button>
   </div>
 
   <!-- MENU TAB -->
   <div class="section active" id="tab-menu">
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <p class="card-title" style="margin:0">Available Items</p>
-        <button class="btn btn-sm" onclick="loadMenu()">🔄 Refresh</button>
+      <div class="card-header">
+        <p class="card-title">Available Items</p>
+        <button class="btn-refresh" onclick="loadMenu()">↻ Refresh</button>
       </div>
-      <div id="menuContent"><div class="loading">Loading menu...</div></div>
+      <div id="menuContent"><div class="loading">Loading menu</div></div>
     </div>
   </div>
 
   <!-- ORDER TAB -->
   <div class="section" id="tab-order">
     <div class="card">
-      <p class="card-title">New Order</p>
-      <div id="selectedPreview" style="display:none" class="selected-item-preview"></div>
-      <div class="form-row">
+      <p class="card-title" style="margin-bottom:20px">New Order</p>
+      <div id="selectedPreview" class="selected-preview"></div>
+      <div class="form-grid">
         <div class="form-group">
           <label>Table Number</label>
-          <input type="number" id="table_id" placeholder="e.g. 1" min="1">
+          <input type="number" id="table_id" placeholder="e.g. 1" min="1" />
         </div>
         <div class="form-group">
           <label>Item ID</label>
-          <input type="number" id="item_id" placeholder="e.g. 3" min="1" oninput="previewItem()">
+          <input type="number" id="item_id" placeholder="e.g. 3" min="1" oninput="previewItem()" />
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:16px">
+      <div class="qty-wrap">
         <label>Quantity</label>
         <div class="qty-control">
           <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <span class="qty-val" id="qtyVal">1</span>
+          <div class="qty-val" id="qtyVal">1</div>
           <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="placeOrder()">Place Order</button>
+      <button class="btn-primary" onclick="placeOrder()">Place Order</button>
       <div id="orderMsg"></div>
     </div>
 
-    <!-- Quick Menu Hint -->
-    <div class="card">
-      <p class="card-title" style="font-size:13px;color:#888;margin-bottom:12px">
-        Quick select from menu
-      </p>
-      <div id="quickMenuHint" class="menu-grid"></div>
-    </div>
+    <!-- Quick select -->
+    <p class="divider-label">Quick Select</p>
+    <div id="quickMenuHint" class="menu-grid"></div>
   </div>
 
   <!-- ORDERS TAB -->
   <div class="section" id="tab-orders">
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <p class="card-title" style="margin:0">All Orders</p>
-        <button class="btn btn-sm" onclick="loadOrders()">🔄 Refresh</button>
+      <div class="card-header">
+        <p class="card-title">All Orders</p>
+        <button class="btn-refresh" onclick="loadOrders()">↻ Refresh</button>
       </div>
       <div id="ordersContent"><div class="empty">Click refresh to load orders</div></div>
     </div>
@@ -150,22 +661,19 @@
   let qty = 1;
 
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => {
-      t.classList.toggle('active', ['menu','order','orders'][i] === name);
-    });
-    document.querySelectorAll('.section').forEach((s, i) => {
-      s.classList.toggle('active', ['tab-menu','tab-order','tab-orders'][i] === 'tab-' + name);
-    });
+    const names = ['menu', 'order', 'orders'];
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', names[i] === name));
+    document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', names[i] === name));
     if (name === 'orders') loadOrders();
   }
 
   function setStatus(ok) {
-    document.getElementById('statusDot').style.background = ok ? '#639922' : '#e53935';
-    document.getElementById('statusText').textContent = ok ? 'Connected to server' : 'Server offline — run node server.js';
+    document.getElementById('statusDot').style.background = ok ? '#4caf78' : '#e05252';
+    document.getElementById('statusText').textContent = ok ? 'Connected' : 'Server offline';
   }
 
   function loadMenu() {
-    document.getElementById('menuContent').innerHTML = '<div class="loading">Loading...</div>';
+    document.getElementById('menuContent').innerHTML = '<div class="loading">Loading menu</div>';
     fetch(API + '/menu')
       .then(r => r.json())
       .then(data => {
@@ -179,11 +687,11 @@
         data.forEach(item => {
           html += `
             <div class="menu-item" onclick="selectItem(${item.item_id})">
-              <div class="item-id">ID: ${item.item_id}</div>
+              <div class="item-id">ID · ${item.item_id}</div>
               <div class="item-name">${item.item_name}</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+              <div class="item-footer">
                 <span class="item-price">₹${parseFloat(item.price).toFixed(2)}</span>
-                ${item.is_vegetarian ? '<span class="badge badge-veg">Veg</span>' : ''}
+                ${item.is_vegetarian ? '<span class="badge-veg">Veg</span>' : ''}
               </div>
             </div>`;
         });
@@ -202,9 +710,12 @@
     data.slice(0, 6).forEach(item => {
       html += `
         <div class="menu-item" onclick="selectItem(${item.item_id})">
-          <div style="color:#aaa;font-size:11px">ID: ${item.item_id}</div>
-          <div style="font-weight:600;font-size:13px;color:#1a1a1a">${item.item_name}</div>
-          <div style="color:#2e7d32;font-weight:600;margin-top:4px">₹${parseFloat(item.price).toFixed(2)}</div>
+          <div class="item-id">ID · ${item.item_id}</div>
+          <div class="item-name">${item.item_name}</div>
+          <div class="item-footer">
+            <span class="item-price">₹${parseFloat(item.price).toFixed(2)}</span>
+            ${item.is_vegetarian ? '<span class="badge-veg">Veg</span>' : ''}
+          </div>
         </div>`;
     });
     document.getElementById('quickMenuHint').innerHTML = html;
@@ -222,7 +733,7 @@
     const prev = document.getElementById('selectedPreview');
     if (item) {
       prev.style.display = 'block';
-      prev.textContent = '✓ ' + item.item_name + ' — ₹' + parseFloat(item.price).toFixed(2) + ' (ID: ' + id + ')';
+      prev.textContent = '✓  ' + item.item_name + '  ·  ₹' + parseFloat(item.price).toFixed(2) + '  (ID: ' + id + ')';
     } else {
       prev.style.display = 'none';
     }
@@ -241,7 +752,7 @@
       msgEl.innerHTML = '<div class="msg-error">Please fill in Table Number and Item ID.</div>';
       return;
     }
-    msgEl.innerHTML = '<div class="loading">Placing order...</div>';
+    msgEl.innerHTML = '<div class="loading">Placing order</div>';
     fetch(API + '/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -252,7 +763,7 @@
       if (data.error) {
         msgEl.innerHTML = '<div class="msg-error">' + data.error + '</div>';
       } else {
-        msgEl.innerHTML = '<div class="msg-success">✓ ' + (data.message || 'Order placed!') + '</div>';
+        msgEl.innerHTML = '<div class="msg-success">✓ ' + (data.message || 'Order placed successfully!') + '</div>';
         document.getElementById('table_id').value = '';
         document.getElementById('item_id').value = '';
         document.getElementById('selectedPreview').style.display = 'none';
@@ -264,7 +775,7 @@
   }
 
   function loadOrders() {
-    document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading orders...</div>';
+    document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading orders</div>';
     fetch(API + '/orders')
       .then(r => r.json())
       .then(data => {
@@ -276,15 +787,15 @@
         data.forEach(o => {
           const st = o.status || 'pending';
           html += `
-            <div class="order-card">
-              <div class="order-num">Order #${o.order_id}</div>
+            <div class="order-card ${st}">
+              <div class="order-num">#${o.order_id}</div>
               <div class="order-info">
                 <div class="order-name">${o.item_name || 'Unknown item'}</div>
-                <div class="order-meta">Table ${o.table_id} &nbsp;|&nbsp; Qty: ${o.quantity}</div>
+                <div class="order-meta">Table ${o.table_id} &nbsp;·&nbsp; Qty: ${o.quantity}</div>
               </div>
               <div style="text-align:right">
                 <div class="order-amount">₹${parseFloat(o.total_amount || 0).toFixed(2)}</div>
-                <div style="margin-top:4px"><span class="status status-${st}">${st}</span></div>
+                <div><span class="status status-${st}">${st}</span></div>
               </div>
             </div>`;
         });
@@ -298,6 +809,5 @@
 
   loadMenu();
 </script>
-
 </body>
 </html>
