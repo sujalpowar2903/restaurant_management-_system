@@ -2,7 +2,14 @@
 <html>
 <head>
   <title>Restaurant Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    @media print {
+      body > *         { display: none !important; }
+      #printFrame      { display: block !important; position: fixed; inset: 0;
+                         background: #fff; z-index: 9999; }
+    }
+    #printFrame { display: none; }
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -532,6 +539,7 @@
   </style>
 </head>
 <body>
+<div id="printFrame"></div>
 
 <!-- ══════════════ LOGIN PAGE ══════════════ -->
 <div id="loginPage">
@@ -695,11 +703,18 @@
   <div class="modal" style="max-width:380px">
     <button class="modal-close" onclick="closeBillModal()">✕</button>
     <div id="receiptContent"></div>
-    <button class="btn btn-gold"
-            style="width:100%;justify-content:center;margin-top:1rem"
-            onclick="window.print()">
-      🖨️ Print Bill
-    </button>
+    <div style="display:flex;gap:10px;margin-top:1rem">
+      <button class="btn btn-gold"
+              style="flex:1;justify-content:center"
+              onclick="printBill()">
+        🖨️ Print Bill
+      </button>
+      <button class="btn btn-gold"
+              style="flex:1;justify-content:center"
+              onclick="downloadBillPDF()">
+        ⬇️ Download PDF
+      </button>
+    </div>
   </div>
 </div>
 
@@ -873,7 +888,6 @@ function placeOrder() {
   .catch(() => msgEl.innerHTML = '<div class="msg-err">Failed to connect to server.</div>');
 }
 
-// ── ORDERS ─────────────────────────────────────
 function loadOrders() {
   document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading...</div>';
   fetch(API + '/orders')
@@ -887,35 +901,41 @@ function loadOrders() {
       let html = '';
       data.forEach(o => {
         const st  = o.status || 'pending';
-        const tax = parseFloat(o.tax_amount || 0).toFixed(2);
-        const isPaid = st === 'completed' || st === 'paid';
+        // Safe numeric parsing — guard against null / string "0"
+        const qty_n   = parseInt(o.quantity)         || 1;
+        const up      = parseFloat(o.unit_price)     || 0;
+        const tax_n   = parseFloat(o.tax_amount)     || 0;
+        const subtotal= up * qty_n;
+        const total_n = (parseFloat(o.total_amount) > 0)
+                          ? parseFloat(o.total_amount)
+                          : subtotal + tax_n;
+        const isPaid  = st === 'completed' || st === 'paid';
+
         html += `
           <div class="order-card">
             <div class="order-id">#${o.order_id}</div>
             <div class="order-info">
               <div class="order-name">${o.item_name || 'Unknown'}</div>
               <div class="order-meta">
-                Table ${o.table_id} &nbsp;·&nbsp; Qty: ${o.quantity}
-                &nbsp;·&nbsp; &#8377;${parseFloat(o.unit_price||0).toFixed(2)} each
+                Table ${o.table_id} &nbsp;·&nbsp; Qty: ${qty_n}
+                &nbsp;·&nbsp; &#8377;${up.toFixed(2)} each
               </div>
               <span class="status s-${st}">${st.toUpperCase()}</span>
             </div>
             <div class="order-right">
-              <div class="order-amt">&#8377;${parseFloat(o.total_amount||0).toFixed(2)}</div>
-              <div class="order-tax">+&#8377;${tax} tax</div>
+              <div class="order-amt">&#8377;${total_n.toFixed(2)}</div>
+              <div class="order-tax">+&#8377;${tax_n.toFixed(2)} tax</div>
               ${!isPaid ? `
                 <button class="btn btn-green btn-sm" style="margin-top:8px"
                   onclick="openPayModal(${o.order_id},
-                    '${o.item_name}', ${o.quantity},
-                    ${o.unit_price||0}, ${o.total_amount||0},
-                    ${o.tax_amount||0}, ${o.table_id})">
+                    '${(o.item_name||'').replace(/'/g,"\\'")}', ${qty_n},
+                    ${up}, ${total_n}, ${tax_n}, ${o.table_id})">
                   💳 Pay
                 </button>` : `
                 <button class="btn btn-sm" style="margin-top:8px;color:#c9a227"
                   onclick="showBill(${o.order_id},
-                    '${o.item_name}', ${o.quantity},
-                    ${o.unit_price||0}, ${o.total_amount||0},
-                    ${o.tax_amount||0}, ${o.table_id})">
+                    '${(o.item_name||'').replace(/'/g,"\\'")}', ${qty_n},
+                    ${up}, ${total_n}, ${tax_n}, ${o.table_id}, 'Paid')">
                   🧾 Bill
                 </button>`}
             </div>
@@ -925,7 +945,7 @@ function loadOrders() {
     })
     .catch(() => {
       document.getElementById('ordersContent').innerHTML =
-        '<div class="empty">Cannot load orders.</div>';
+        '<div class="empty">Cannot load orders — server may be offline.</div>';
     });
 }
 
@@ -933,22 +953,33 @@ function loadOrders() {
 function openPayModal(order_id, item_name, quantity, unit_price, total, tax, table_id) {
   payOrderId = order_id;
   payMethod  = null;
-  payData    = { order_id, item_name, quantity, unit_price, total, tax, table_id };
+
+  // Safely parse all numeric values
+  const qty_n   = parseInt(quantity)        || 1;
+  const up      = parseFloat(unit_price)    || 0;
+  const tax_n   = parseFloat(tax)           || 0;
+  // Recalculate total from unit_price × qty + tax in case API returns 0
+  const subtotal_n = up * qty_n;
+  const total_n  = (parseFloat(total) > 0)
+                     ? parseFloat(total)
+                     : subtotal_n + tax_n;
+
+  payData = { order_id, item_name,
+              quantity: qty_n, unit_price: up,
+              total: total_n, tax: tax_n, table_id };
 
   document.querySelectorAll('.pay-method').forEach(el => el.classList.remove('selected'));
   document.getElementById('payMsg').innerHTML = '';
 
-  const subtotal = parseFloat(total) - parseFloat(tax);
-
   document.getElementById('billDetails').innerHTML = `
     <div class="bill-row"><span>Order</span><span>#${order_id}</span></div>
     <div class="bill-row"><span>Table</span><span>${table_id}</span></div>
-    <div class="bill-row"><span>${item_name} x${quantity}</span>
-      <span>&#8377;${(unit_price * quantity).toFixed(2)}</span></div>
+    <div class="bill-row"><span>${item_name} × ${qty_n}</span>
+      <span>&#8377;${subtotal_n.toFixed(2)}</span></div>
     <div class="bill-row"><span>Tax (5%)</span>
-      <span>&#8377;${parseFloat(tax).toFixed(2)}</span></div>
+      <span>&#8377;${tax_n.toFixed(2)}</span></div>
     <div class="bill-total">
-      <span>Total</span><span>&#8377;${parseFloat(total).toFixed(2)}</span>
+      <span>Total</span><span>&#8377;${total_n.toFixed(2)}</span>
     </div>`;
 
   document.getElementById('payModal').style.display = 'flex';
@@ -973,13 +1004,8 @@ function confirmPayment() {
   document.getElementById('payMsg').innerHTML =
     '<div class="loading">Processing payment...</div>';
 
-  fetch(API + '/order/' + payOrderId + '/status', {
-    method:  'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ status: 'completed' })
-  })
-  .then(r => r.json())
-  .then(() => {
+  // Mark order as completed in the backend (best-effort; proceed even if offline)
+  const finalize = () => {
     closePayModal();
     showBill(
       payData.order_id, payData.item_name, payData.quantity,
@@ -987,11 +1013,16 @@ function confirmPayment() {
       payData.table_id, payMethod
     );
     loadOrders();
+  };
+
+  fetch(API + '/order/' + payOrderId + '/status', {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ status: 'completed' })
   })
-  .catch(() => {
-    document.getElementById('payMsg').innerHTML =
-      '<div class="msg-err" style="margin-top:10px">Payment failed. Try again.</div>';
-  });
+  .then(r => r.json())
+  .then(finalize)
+  .catch(finalize); // proceed even if server unreachable
 }
 
 // ── BILL RECEIPT ───────────────────────────────
@@ -999,13 +1030,24 @@ function showBill(order_id, item_name, quantity, unit_price, total, tax, table_i
   const now      = new Date();
   const dateStr  = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
   const timeStr  = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
-  const subtotal = (parseFloat(total) - parseFloat(tax)).toFixed(2);
+
+  // Safely parse values
+  const qty_n    = parseInt(quantity)     || 1;
+  const up       = parseFloat(unit_price) || 0;
+  const tax_n    = parseFloat(tax)        || 0;
+  const subtotal = up * qty_n;
+  const total_n  = (parseFloat(total) > 0) ? parseFloat(total) : subtotal + tax_n;
+
   const methodLabel = {
     cash:'Cash', credit_card:'Credit Card', upi:'UPI', wallet:'Wallet'
   }[method] || 'Paid';
 
+  // Store bill data for PDF download
+  window._lastBill = { order_id, item_name, qty_n, up, subtotal, tax_n, total_n,
+                       table_id, methodLabel, dateStr, timeStr };
+
   document.getElementById('receiptContent').innerHTML = `
-    <div class="receipt">
+    <div class="receipt" id="printableReceipt">
       <div class="receipt-head">
         <h2>🍽️ Restaurant</h2>
         <p>Management System</p>
@@ -1016,14 +1058,14 @@ function showBill(order_id, item_name, quantity, unit_price, total, tax, table_i
       <div class="receipt-row"><span>Table</span><span>${table_id}</span></div>
       <hr class="receipt-divider">
       <div class="receipt-row">
-        <span>${item_name} x${quantity}</span>
-        <span>&#8377;${(unit_price * quantity).toFixed(2)}</span>
+        <span>${item_name} × ${qty_n}</span>
+        <span>&#8377;${subtotal.toFixed(2)}</span>
       </div>
-      <div class="receipt-row"><span>Subtotal</span><span>&#8377;${subtotal}</span></div>
-      <div class="receipt-row"><span>Tax (5%)</span><span>&#8377;${parseFloat(tax).toFixed(2)}</span></div>
+      <div class="receipt-row"><span>Subtotal</span><span>&#8377;${subtotal.toFixed(2)}</span></div>
+      <div class="receipt-row"><span>Tax (5%)</span><span>&#8377;${tax_n.toFixed(2)}</span></div>
       <hr class="receipt-divider">
       <div class="receipt-total">
-        <span>TOTAL</span><span>&#8377;${parseFloat(total).toFixed(2)}</span>
+        <span>TOTAL</span><span>&#8377;${total_n.toFixed(2)}</span>
       </div>
       <hr class="receipt-divider">
       <div class="receipt-row"><span>Payment</span><span>${methodLabel}</span></div>
@@ -1034,6 +1076,82 @@ function showBill(order_id, item_name, quantity, unit_price, total, tax, table_i
     </div>`;
 
   document.getElementById('billModal').style.display = 'flex';
+}
+
+function printBill() {
+  const receipt = document.getElementById('printableReceipt');
+  if (!receipt) return;
+  const frame = document.getElementById('printFrame');
+  frame.innerHTML = receipt.outerHTML;
+  window.print();
+  setTimeout(() => { frame.innerHTML = ''; }, 1000);
+}
+
+function downloadBillPDF() {
+  const b = window._lastBill;
+  if (!b) return;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: [80, 160] });
+
+  const W    = 80;
+  const cx   = W / 2;
+  let   y    = 8;
+
+  const line = (text, size, bold, color) => {
+    doc.setFontSize(size || 9);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(color || '#1a1a1a');
+    doc.text(text, cx, y, { align: 'center' });
+    y += (size || 9) * 0.45 + 1.5;
+  };
+
+  const row = (left, right, bold) => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor('#1a1a1a');
+    doc.text(left,  6,  y);
+    doc.text(right, W - 6, y, { align: 'right' });
+    y += 5.5;
+  };
+
+  const dashes = () => {
+    doc.setDrawColor('#cccccc');
+    doc.setLineDash([1, 1]);
+    doc.line(6, y, W - 6, y);
+    y += 4;
+  };
+
+  // Header
+  line('Restaurant', 14, true, '#c9a227');
+  line('Management System', 8, false, '#888888');
+  line(b.dateStr + '  ' + b.timeStr, 8, false, '#888888');
+  y += 2;
+  dashes();
+
+  row('Order #', '#' + b.order_id);
+  row('Table',   String(b.table_id));
+  dashes();
+
+  row(b.item_name + ' \u00d7 ' + b.qty_n, '\u20B9' + b.subtotal.toFixed(2));
+  row('Subtotal', '\u20B9' + b.subtotal.toFixed(2));
+  row('Tax (5%)', '\u20B9' + b.tax_n.toFixed(2));
+  dashes();
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor('#c9a227');
+  doc.text('TOTAL', 6, y);
+  doc.text('\u20B9' + b.total_n.toFixed(2), W - 6, y, { align: 'right' });
+  y += 6;
+
+  dashes();
+  row('Payment', b.methodLabel);
+  y += 4;
+  line('Thank you for dining with us!', 8, false, '#888888');
+  line('Visit again soon \uD83D\uDE4F', 8, false, '#888888');
+
+  doc.save('Receipt_Order_' + b.order_id + '.pdf');
 }
 
 function closeBillModal() {
