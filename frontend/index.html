@@ -1,813 +1,1044 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Restaurant Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg:        #0c0b09;
-      --surface:   #151310;
-      --card:      #1c1812;
-      --card2:     #221e14;
-      --gold:      #c8933a;
-      --gold-lt:   #e5b96a;
-      --gold-dim:  rgba(200,147,58,0.18);
-      --cream:     #f0e6d0;
-      --muted:     #7a6e5e;
-      --border:    rgba(200,147,58,0.16);
-      --border2:   rgba(255,255,255,0.06);
-      --green:     #4caf78;
-      --red:       #e05252;
-      --blue:      #5b9bd5;
-      --amber:     #e8a838;
-      --purple:    #a878d8;
-      --radius:    14px;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--cream);
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0a;
+      color: #e8d5b0;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* ── Ambient background ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(200,147,58,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(200,147,58,0.04) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .app {
+    /* ── LOGIN PAGE ─────────────────────────────── */
+    #loginPage {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1500 100%);
       position: relative;
-      z-index: 1;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 0 20px 80px;
     }
 
-    /* ── Hero Header ── */
+    #loginPage::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600') center/cover;
+      opacity: 0.08;
+    }
+
+    .login-box {
+      position: relative;
+      background: #1a1500;
+      border: 1px solid #8b6914;
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .login-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #c9a227, #8b6914);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .login-box h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: #e8d5b0;
+      margin-bottom: 6px;
+    }
+
+    .login-box p {
+      font-size: 12px;
+      color: #8b7355;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .login-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .login-group label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #c9a227;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .login-group input {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f0e00;
+      border: 1px solid #3a2e00;
+      border-radius: 10px;
+      color: #e8d5b0;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-group input:focus { border-color: #c9a227; }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #c9a227, #8b6914);
+      color: #0a0a0a;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      letter-spacing: 1px;
+      transition: opacity 0.2s;
+    }
+
+    .login-btn:hover { opacity: 0.9; }
+
+    .login-err {
+      background: rgba(200,50,50,0.15);
+      border: 1px solid #8b2020;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      color: #ff8080;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── MAIN APP ───────────────────────────────── */
+    #mainApp { display: none; }
+
     .hero {
       position: relative;
       height: 220px;
-      margin: 0 -20px 32px;
       overflow: hidden;
     }
 
     .hero-imgs {
-      position: absolute;
-      inset: 0;
       display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
-      gap: 2px;
+      grid-template-columns: repeat(5, 1fr);
+      height: 100%;
     }
 
-    .hero-imgs img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      filter: brightness(0.35) saturate(1.1);
+    .hero-imgs div {
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.35);
     }
 
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, var(--bg) 0%, rgba(12,11,9,0.55) 55%, transparent 100%);
-    }
-
-    .hero-content {
-      position: absolute;
-      bottom: 28px; left: 32px;
       display: flex;
-      align-items: flex-end;
-      gap: 20px;
+      align-items: center;
+      padding: 2rem 3rem;
+      background: linear-gradient(90deg, rgba(10,10,0,0.7) 0%, transparent 100%);
     }
 
-    .hero-logo {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-      border-radius: 14px;
+    .hero-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #c9a227, #8b6914);
+      border-radius: 18px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      box-shadow: 0 8px 24px rgba(200,147,58,0.35);
+      font-size: 32px;
+      margin-right: 1.5rem;
+      flex-shrink: 0;
     }
 
-    .hero-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 2.2rem;
+    .hero-text h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
       font-weight: 700;
-      color: var(--cream);
-      line-height: 1;
-      letter-spacing: 0.5px;
+      color: #fff;
     }
 
-    .hero-sub {
-      font-size: 12px;
-      letter-spacing: 3px;
+    .hero-text p {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #c9a227;
       text-transform: uppercase;
-      color: var(--gold);
-      margin-top: 5px;
+      margin-top: 4px;
     }
 
-    .status-pill {
+    .logout-btn {
       position: absolute;
-      top: 20px; right: 24px;
-      display: flex; align-items: center; gap: 7px;
-      background: rgba(12,11,9,0.7);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 6px 14px;
+      top: 1rem; right: 1.5rem;
+      background: rgba(139,105,20,0.3);
+      border: 1px solid #8b6914;
+      color: #c9a227;
+      padding: 7px 16px;
+      border-radius: 8px;
       font-size: 12px;
-      color: var(--muted);
+      cursor: pointer;
+      font-weight: 600;
     }
 
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #aaa;
-      transition: background 0.3s;
-    }
+    .logout-btn:hover { background: rgba(139,105,20,0.5); }
 
-    /* ── Tabs ── */
+    .nav-wrap { background: #111100; padding: 0 2rem; }
+
     .tabs {
       display: flex;
-      gap: 4px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 5px;
-      margin-bottom: 28px;
+      gap: 0;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .tab {
       flex: 1;
-      padding: 11px 16px;
-      border: none;
+      padding: 18px;
       background: transparent;
-      cursor: pointer;
-      border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
+      border: none;
+      color: #8b7355;
+      font-size: 14px;
       font-weight: 500;
-      color: var(--muted);
-      transition: all 0.2s;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 8px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
     }
 
-    .tab:hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+    .tab:hover { color: #c9a227; }
 
     .tab.active {
-      background: linear-gradient(135deg, rgba(200,147,58,0.2), rgba(200,147,58,0.1));
-      color: var(--gold-lt);
-      border: 1px solid rgba(200,147,58,0.3);
-      font-weight: 600;
+      color: #c9a227;
+      border-bottom-color: #c9a227;
+      background: rgba(201,162,39,0.05);
     }
 
-    .tab-icon { font-size: 15px; }
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
 
-    /* ── Sections ── */
-    .section { display: none; animation: fadeUp 0.3s ease both; }
+    .section { display: none; }
     .section.active { display: block; }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Card ── */
+    /* CARDS */
     .card {
-      background: var(--card);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 16px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
+      background: #111100;
+      border: 1px solid #2a2200;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
     }
 
     .card-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--cream);
-      letter-spacing: 0.3px;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: #e8d5b0;
+      margin-bottom: 1.2rem;
     }
 
-    /* ── Refresh Button ── */
-    .btn-refresh {
-      background: var(--card2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 12px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex; align-items: center; gap: 6px;
-    }
-
-    .btn-refresh:hover { color: var(--gold-lt); border-color: var(--gold); }
-
-    /* ── Menu Grid ── */
+    /* MENU GRID */
     .menu-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
     }
 
     .menu-item {
-      background: var(--card2);
-      border: 1px solid var(--border2);
+      background: #1a1500;
+      border: 1px solid #2a2200;
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px;
       cursor: pointer;
       transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
     }
 
-    .menu-item::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(200,147,58,0.08), transparent);
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
+    .menu-item:hover { border-color: #c9a227; background: #201a00; }
+    .menu-item.sel   { border-color: #c9a227; background: #201a00; }
 
-    .menu-item:hover { border-color: rgba(200,147,58,0.4); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-    .menu-item:hover::after { opacity: 1; }
-    .menu-item.selected { border-color: var(--gold); background: rgba(200,147,58,0.1); }
+    .item-cat  { font-size: 10px; color: #c9a227; text-transform: uppercase;
+                 letter-spacing: 1px; margin-bottom: 4px; }
+    .item-id   { font-size: 11px; color: #4a3f20; margin-bottom: 4px; }
+    .item-name { font-size: 14px; font-weight: 600; color: #e8d5b0; margin-bottom: 4px; }
+    .item-desc { font-size: 11px; color: #5a4f30; margin-bottom: 10px;
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-foot { display: flex; align-items: center; justify-content: space-between; }
+    .item-price { font-size: 16px; font-weight: 700; color: #c9a227; }
+    .item-prep  { font-size: 11px; color: #4a3f20; }
 
-    .item-id {
-      font-size: 10px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
+    .badge { display: inline-block; font-size: 10px; padding: 2px 7px;
+             border-radius: 4px; font-weight: 700; margin-top: 8px; }
+    .badge-veg  { background: rgba(46,125,50,0.2); color: #66bb6a; border: 1px solid #2e7d32; }
+    .badge-nveg { background: rgba(198,40,40,0.2); color: #ef5350; border: 1px solid #c62828; }
 
-    .item-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--cream);
-      margin-bottom: 10px;
-      line-height: 1.3;
-    }
-
-    .item-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .item-price {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gold-lt);
-    }
-
-    .badge-veg {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 100px;
-      background: rgba(76,175,120,0.15);
-      color: var(--green);
-      border: 1px solid rgba(76,175,120,0.25);
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    /* ── Order Form ── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .form-group { display: flex; flex-direction: column; gap: 7px; }
-
-    .form-group label {
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--gold);
-      font-weight: 600;
-    }
-
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 11px; font-weight: 600; color: #c9a227;
+                        letter-spacing: 1px; text-transform: uppercase; }
     .form-group input {
-      background: var(--card2);
-      border: 1px solid var(--border2);
+      padding: 11px 14px;
+      background: #0f0e00;
+      border: 1px solid #2a2200;
       border-radius: 10px;
-      padding: 12px 16px;
-      font-family: 'DM Sans', sans-serif;
+      color: #e8d5b0;
       font-size: 14px;
-      color: var(--cream);
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
+    .form-group input:focus { border-color: #c9a227; }
 
-    .form-group input::placeholder { color: var(--muted); }
-    .form-group input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,147,58,0.12); }
-
-    .selected-preview {
-      background: rgba(200,147,58,0.1);
-      border: 1px solid rgba(200,147,58,0.3);
+    .preview-box {
+      background: rgba(201,162,39,0.08);
+      border: 1px solid #3a2e00;
+      border-left: 3px solid #c9a227;
       border-radius: 10px;
       padding: 12px 16px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       font-size: 13px;
-      color: var(--gold-lt);
+      color: #c9a227;
       display: none;
     }
 
-    /* ── Qty Control ── */
-    .qty-wrap { margin-bottom: 20px; }
-    .qty-wrap label {
-      display: block;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--gold);
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
+    .qty-row   { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .qty-label { font-size: 11px; font-weight: 600; color: #c9a227;
+                 letter-spacing: 1px; text-transform: uppercase; min-width: 70px; }
+    .qty-btn   { width: 36px; height: 36px; border: 1px solid #3a2e00;
+                 border-radius: 8px; background: #1a1500; cursor: pointer;
+                 font-size: 20px; display: flex; align-items: center;
+                 justify-content: center; color: #c9a227; }
+    .qty-btn:hover { background: #2a2200; }
+    .qty-val   { font-size: 18px; font-weight: 700; color: #e8d5b0;
+                 min-width: 32px; text-align: center; }
 
-    .qty-control { display: flex; align-items: center; gap: 0; width: fit-content; }
-
-    .qty-btn {
-      width: 38px; height: 38px;
-      background: var(--card2);
-      border: 1px solid var(--border);
-      color: var(--cream);
-      font-size: 18px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-      line-height: 1;
-    }
-
-    .qty-btn:first-child { border-radius: 10px 0 0 10px; }
-    .qty-btn:last-child  { border-radius: 0 10px 10px 0; }
-    .qty-btn:hover { background: var(--gold-dim); color: var(--gold-lt); border-color: var(--gold); }
-
-    .qty-val {
-      width: 52px; height: 38px;
-      background: var(--card2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      border-left: none; border-right: none;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--cream);
-    }
-
-    /* ── CTA Button ── */
-    .btn-primary {
-      background: linear-gradient(135deg, var(--gold), var(--gold-lt));
-      color: #1a0e00;
-      border: none;
+    .btn {
+      padding: 11px 22px;
       border-radius: 10px;
-      padding: 13px 28px;
-      font-family: 'DM Sans', sans-serif;
       font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid #3a2e00;
+      background: #1a1500;
+      color: #c9a227;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
+    .btn:hover { background: #2a2200; }
+    .btn-gold  { background: linear-gradient(135deg, #c9a227, #8b6914);
+                 color: #0a0a0a; border-color: #c9a227; font-weight: 700; }
+    .btn-gold:hover { opacity: 0.9; }
+    .btn-sm    { padding: 7px 14px; font-size: 12px; }
+    .btn-green { background: rgba(46,125,50,0.2); color: #66bb6a;
+                 border-color: #2e7d32; }
+    .btn-green:hover { background: rgba(46,125,50,0.35); }
 
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,147,58,0.35); }
-    .btn-primary:active { transform: none; }
+    .msg-ok  { background: rgba(46,125,50,0.15); color: #66bb6a;
+               border: 1px solid #2e7d32; border-radius: 10px;
+               padding: 12px 16px; font-size: 13px; margin-top: 14px; }
+    .msg-err { background: rgba(198,40,40,0.15); color: #ef5350;
+               border: 1px solid #c62828; border-radius: 10px;
+               padding: 12px 16px; font-size: 13px; margin-top: 14px; }
 
-    /* ── Messages ── */
-    .msg-success {
-      background: rgba(76,175,120,0.12);
-      border: 1px solid rgba(76,175,120,0.3);
-      color: var(--green);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      margin-top: 14px;
-    }
-
-    .msg-error {
-      background: rgba(224,82,82,0.1);
-      border: 1px solid rgba(224,82,82,0.3);
-      color: var(--red);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      margin-top: 14px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .loading::before {
-      content: '';
-      display: block;
-      width: 28px; height: 28px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      margin: 0 auto 12px;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .empty {
-      text-align: center;
-      padding: 48px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    /* ── Orders List ── */
-    .orders-list { display: flex; flex-direction: column; gap: 10px; }
-
+    /* ORDERS */
     .order-card {
-      background: var(--card2);
-      border: 1px solid var(--border2);
+      background: #1a1500;
+      border: 1px solid #2a2200;
+      border-left: 3px solid #c9a227;
       border-radius: 12px;
-      padding: 14px 18px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 16px;
-      transition: border-color 0.2s;
-      position: relative;
-      overflow: hidden;
     }
 
-    .order-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-    }
-
-    .order-card.pending::before   { background: var(--amber); }
-    .order-card.preparing::before { background: var(--blue); }
-    .order-card.served::before    { background: var(--purple); }
-    .order-card.completed::before { background: var(--green); }
-    .order-card.cancelled::before { background: var(--red); }
-
-    .order-num {
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      min-width: 70px;
-    }
-
+    .order-id   { font-size: 13px; font-weight: 700; color: #4a3f20; min-width: 40px; }
     .order-info { flex: 1; }
+    .order-name { font-size: 15px; font-weight: 600; color: #e8d5b0; }
+    .order-meta { font-size: 12px; color: #5a4f30; margin-top: 3px; }
+    .order-right{ text-align: right; }
+    .order-amt  { font-size: 16px; font-weight: 700; color: #c9a227; }
+    .order-tax  { font-size: 11px; color: #4a3f20; margin-top: 2px; }
 
-    .order-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--cream);
+    .status { display: inline-block; font-size: 11px; padding: 3px 10px;
+              border-radius: 20px; font-weight: 700; letter-spacing: 0.5px; margin-top: 5px; }
+    .s-pending   { background: rgba(245,127,23,0.15); color: #ffa726;
+                   border: 1px solid rgba(245,127,23,0.4); }
+    .s-preparing { background: rgba(21,101,192,0.15); color: #42a5f5;
+                   border: 1px solid rgba(21,101,192,0.4); }
+    .s-ready     { background: rgba(106,27,154,0.15); color: #ce93d8;
+                   border: 1px solid rgba(106,27,154,0.4); }
+    .s-served    { background: rgba(46,125,50,0.15); color: #66bb6a;
+                   border: 1px solid rgba(46,125,50,0.4); }
+    .s-completed { background: rgba(27,94,32,0.15); color: #81c784;
+                   border: 1px solid rgba(27,94,32,0.4); }
+    .s-cancelled { background: rgba(198,40,40,0.15); color: #ef5350;
+                   border: 1px solid rgba(198,40,40,0.4); }
+    .s-paid      { background: rgba(201,162,39,0.15); color: #c9a227;
+                   border: 1px solid rgba(201,162,39,0.4); }
+
+    /* PAYMENT MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      display: none;
     }
 
-    .order-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
-
-    .order-amount {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gold-lt);
-      text-align: right;
+    .modal {
+      background: #111100;
+      border: 1px solid #3a2e00;
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 460px;
+      position: relative;
     }
 
-    .status {
-      display: inline-block;
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 100px;
-      font-weight: 700;
-      margin-top: 5px;
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: #e8d5b0;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #2a2200;
     }
 
-    .status-pending   { background: rgba(232,168,56,0.15); color: var(--amber); border: 1px solid rgba(232,168,56,0.25); }
-    .status-preparing { background: rgba(91,155,213,0.15); color: var(--blue);  border: 1px solid rgba(91,155,213,0.25); }
-    .status-served    { background: rgba(168,120,216,0.15); color: var(--purple); border: 1px solid rgba(168,120,216,0.25); }
-    .status-completed { background: rgba(76,175,120,0.15); color: var(--green); border: 1px solid rgba(76,175,120,0.25); }
-    .status-cancelled { background: rgba(224,82,82,0.12);  color: var(--red);   border: 1px solid rgba(224,82,82,0.25); }
-
-    /* ── Divider label ── */
-    .divider-label {
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--gold);
+    .bill-row {
       display: flex;
-      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1500;
+      color: #8b7355;
+    }
+
+    .bill-row span:last-child { color: #e8d5b0; font-weight: 500; }
+
+    .bill-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 14px 0 0;
+      color: #c9a227;
+      margin-top: 6px;
+    }
+
+    .pay-methods {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 1.2rem 0;
+    }
+
+    .pay-method {
+      padding: 10px;
+      background: #1a1500;
+      border: 1px solid #2a2200;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: #8b7355;
+      transition: all 0.2s;
+    }
+
+    .pay-method:hover   { border-color: #c9a227; color: #c9a227; }
+    .pay-method.selected{ border-color: #c9a227; color: #c9a227;
+                          background: rgba(201,162,39,0.1); }
+
+    .pay-icon { font-size: 22px; margin-bottom: 4px; }
+
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: transparent; border: none;
+      color: #4a3f20; font-size: 22px; cursor: pointer;
+    }
+    .modal-close:hover { color: #c9a227; }
+
+    /* BILL RECEIPT */
+    .receipt {
+      background: #fff;
+      color: #1a1a1a;
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    .receipt-head { text-align: center; margin-bottom: 1rem; }
+    .receipt-head h2 { font-size: 18px; font-weight: 700; }
+    .receipt-head p  { font-size: 11px; color: #888; }
+    .receipt-divider { border: none; border-top: 1px dashed #ccc; margin: 10px 0; }
+    .receipt-row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .receipt-total { display: flex; justify-content: space-between;
+                     font-weight: 700; font-size: 15px; padding: 8px 0 0; }
+    .receipt-foot { text-align: center; margin-top: 1rem; font-size: 11px; color: #888; }
+
+    /* TABLES */
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 12px;
-      margin-bottom: 16px;
     }
 
-    .divider-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+    .table-card {
+      border: 2px solid #2a2200;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      background: #1a1500;
     }
 
-    @media (max-width: 540px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .hero-title { font-size: 1.7rem; }
-      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    .t-available   { border-color: #2e7d32; }
+    .t-occupied    { border-color: #c62828; }
+    .t-reserved    { border-color: #e65100; }
+    .t-maintenance { border-color: #555; }
+
+    .table-num  { font-size: 22px; font-weight: 700; color: #e8d5b0; }
+    .table-cap  { font-size: 11px; color: #5a4f30; margin-top: 3px; }
+    .table-loc  { font-size: 11px; color: #4a3f20; }
+    .table-stat { font-size: 11px; font-weight: 700; margin-top: 8px;
+                  text-transform: uppercase; letter-spacing: 1px; }
+
+    .empty   { text-align: center; padding: 3rem; color: #3a2e00; font-size: 14px; }
+    .loading { text-align: center; padding: 2rem; color: #5a4f30; font-size: 14px; }
+
+    .flex-between {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.2rem;
     }
   </style>
 </head>
 <body>
 
-<div class="app">
+<!-- ══════════════ LOGIN PAGE ══════════════ -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-icon">🍽️</div>
+    <h1>Restaurant Management</h1>
+    <p>Operations Dashboard</p>
+    <div class="login-group">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="Enter your email">
+    </div>
+    <div class="login-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter your password"
+             onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr">Invalid email or password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+<div id="mainApp">
 
   <!-- HERO -->
   <div class="hero">
     <div class="hero-imgs">
-      <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80" alt="" />
-      <img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80" alt="" />
-      <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80" alt="" />
-      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80" alt="" />
+      <div style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400')"></div>
+      <div style="background-image:url('https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400')"></div>
     </div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="hero-logo">🍽️</div>
-      <div>
-        <h1 class="hero-title">Restaurant Management</h1>
-        <p class="hero-sub">Operations Dashboard</p>
+    <div class="hero-overlay">
+      <div class="hero-icon">🍽️</div>
+      <div class="hero-text">
+        <h1>Restaurant Management</h1>
+        <p>Operations Dashboard</p>
       </div>
     </div>
-    <div class="status-pill">
-      <span class="status-dot" id="statusDot"></span>
-      <span id="statusText">Connecting…</span>
-    </div>
+    <button class="logout-btn" onclick="doLogout()">⎋ Logout</button>
   </div>
 
   <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('menu')">
-      <span class="tab-icon">🍴</span> Menu
-    </button>
-    <button class="tab" onclick="switchTab('order')">
-      <span class="tab-icon">🛒</span> Place Order
-    </button>
-    <button class="tab" onclick="switchTab('orders')">
-      <span class="tab-icon">📋</span> View Orders
-    </button>
-  </div>
-
-  <!-- MENU TAB -->
-  <div class="section active" id="tab-menu">
-    <div class="card">
-      <div class="card-header">
-        <p class="card-title">Available Items</p>
-        <button class="btn-refresh" onclick="loadMenu()">↻ Refresh</button>
-      </div>
-      <div id="menuContent"><div class="loading">Loading menu</div></div>
+  <div class="nav-wrap">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('menu')">🍴 Menu</button>
+      <button class="tab" onclick="switchTab('tables')">🪑 Tables</button>
+      <button class="tab" onclick="switchTab('order')">🛒 Place Order</button>
+      <button class="tab" onclick="switchTab('orders')">📋 View Orders</button>
     </div>
   </div>
 
-  <!-- ORDER TAB -->
-  <div class="section" id="tab-order">
-    <div class="card">
-      <p class="card-title" style="margin-bottom:20px">New Order</p>
-      <div id="selectedPreview" class="selected-preview"></div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Table Number</label>
-          <input type="number" id="table_id" placeholder="e.g. 1" min="1" />
+  <div class="content">
+
+    <!-- MENU -->
+    <div class="section active" id="tab-menu">
+      <div class="card">
+        <div class="flex-between">
+          <p class="card-title" style="margin:0">Menu Items</p>
+          <button class="btn btn-sm" onclick="loadMenu()">↺ Refresh</button>
         </div>
-        <div class="form-group">
-          <label>Item ID</label>
-          <input type="number" id="item_id" placeholder="e.g. 3" min="1" oninput="previewItem()" />
-        </div>
+        <div id="menuContent"><div class="loading">Loading menu...</div></div>
       </div>
-      <div class="qty-wrap">
-        <label>Quantity</label>
-        <div class="qty-control">
+    </div>
+
+    <!-- TABLES -->
+    <div class="section" id="tab-tables">
+      <div class="card">
+        <div class="flex-between">
+          <p class="card-title" style="margin:0">Restaurant Tables</p>
+          <button class="btn btn-sm" onclick="loadTables()">↺ Refresh</button>
+        </div>
+        <div id="tablesContent"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ORDER -->
+    <div class="section" id="tab-order">
+      <div class="card">
+        <p class="card-title">Place New Order</p>
+        <div id="previewBox" class="preview-box"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Table Number</label>
+            <input type="number" id="table_id" placeholder="e.g. 1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Item ID</label>
+            <input type="number" id="item_id" placeholder="e.g. 4" min="1" oninput="previewItem()">
+          </div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Quantity</span>
           <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <div class="qty-val" id="qtyVal">1</div>
+          <span class="qty-val" id="qtyVal">1</span>
           <button class="qty-btn" onclick="changeQty(1)">+</button>
         </div>
+        <button class="btn btn-gold" onclick="placeOrder()">Place Order</button>
+        <div id="orderMsg"></div>
       </div>
-      <button class="btn-primary" onclick="placeOrder()">Place Order</button>
-      <div id="orderMsg"></div>
+      <div class="card">
+        <p class="card-title" style="font-size:13px;color:#5a4f30;margin-bottom:10px">
+          Quick select — click any item
+        </p>
+        <div id="quickMenu" class="menu-grid"></div>
+      </div>
     </div>
 
-    <!-- Quick select -->
-    <p class="divider-label">Quick Select</p>
-    <div id="quickMenuHint" class="menu-grid"></div>
-  </div>
-
-  <!-- ORDERS TAB -->
-  <div class="section" id="tab-orders">
-    <div class="card">
-      <div class="card-header">
-        <p class="card-title">All Orders</p>
-        <button class="btn-refresh" onclick="loadOrders()">↻ Refresh</button>
+    <!-- ORDERS -->
+    <div class="section" id="tab-orders">
+      <div class="card">
+        <div class="flex-between">
+          <p class="card-title" style="margin:0">All Orders</p>
+          <button class="btn btn-sm" onclick="loadOrders()">↺ Refresh</button>
+        </div>
+        <div id="ordersContent"><div class="empty">Click refresh to load orders</div></div>
       </div>
-      <div id="ordersContent"><div class="empty">Click refresh to load orders</div></div>
     </div>
-  </div>
 
+  </div>
+</div>
+
+<!-- ══════════════ PAYMENT MODAL ══════════════ -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closePayModal()">✕</button>
+    <div class="modal-title">💳 Process Payment</div>
+
+    <div id="billDetails"></div>
+
+    <div style="margin:1rem 0 0.5rem;font-size:11px;font-weight:700;
+                color:#c9a227;letter-spacing:1px;text-transform:uppercase">
+      Payment Method
+    </div>
+    <div class="pay-methods">
+      <div class="pay-method" onclick="selectMethod(this,'cash')">
+        <div class="pay-icon">💵</div>Cash
+      </div>
+      <div class="pay-method" onclick="selectMethod(this,'credit_card')">
+        <div class="pay-icon">💳</div>Credit Card
+      </div>
+      <div class="pay-method" onclick="selectMethod(this,'upi')">
+        <div class="pay-icon">📱</div>UPI
+      </div>
+      <div class="pay-method" onclick="selectMethod(this,'wallet')">
+        <div class="pay-icon">👛</div>Wallet
+      </div>
+    </div>
+
+    <button class="btn btn-gold" style="width:100%;justify-content:center;padding:14px"
+            onclick="confirmPayment()">
+      Confirm Payment
+    </button>
+    <div id="payMsg"></div>
+  </div>
+</div>
+
+<!-- ══════════════ BILL MODAL ══════════════ -->
+<div class="modal-overlay" id="billModal">
+  <div class="modal" style="max-width:380px">
+    <button class="modal-close" onclick="closeBillModal()">✕</button>
+    <div id="receiptContent"></div>
+    <button class="btn btn-gold"
+            style="width:100%;justify-content:center;margin-top:1rem"
+            onclick="window.print()">
+      🖨️ Print Bill
+    </button>
+  </div>
 </div>
 
 <script>
-  const API = "http://localhost:5000";
-  let menuData = [];
-  let qty = 1;
+const API = 'http://localhost:5000';
+let menuData  = [];
+let qty       = 1;
+let payOrderId= null;
+let payMethod = null;
+let payData   = null;
 
-  function switchTab(name) {
-    const names = ['menu', 'order', 'orders'];
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', names[i] === name));
-    document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', names[i] === name));
-    if (name === 'orders') loadOrders();
+// ── LOGIN ──────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+
+  if (email === 'sujalpowar2903@gmail.com' && pass === 'sujal1234') {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainApp').style.display   = 'block';
+    loadMenu();
+    err.style.display = 'none';
+  } else {
+    err.style.display = 'block';
   }
+}
 
-  function setStatus(ok) {
-    document.getElementById('statusDot').style.background = ok ? '#4caf78' : '#e05252';
-    document.getElementById('statusText').textContent = ok ? 'Connected' : 'Server offline';
-  }
+function doLogout() {
+  document.getElementById('mainApp').style.display   = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPass').value  = '';
+}
 
-  function loadMenu() {
-    document.getElementById('menuContent').innerHTML = '<div class="loading">Loading menu</div>';
-    fetch(API + '/menu')
-      .then(r => r.json())
-      .then(data => {
-        menuData = data;
-        setStatus(true);
-        if (!data.length) {
-          document.getElementById('menuContent').innerHTML = '<div class="empty">No menu items found. Add items in MySQL Workbench first.</div>';
-          return;
-        }
-        let html = '<div class="menu-grid">';
-        data.forEach(item => {
-          html += `
-            <div class="menu-item" onclick="selectItem(${item.item_id})">
-              <div class="item-id">ID · ${item.item_id}</div>
-              <div class="item-name">${item.item_name}</div>
-              <div class="item-footer">
-                <span class="item-price">₹${parseFloat(item.price).toFixed(2)}</span>
-                ${item.is_vegetarian ? '<span class="badge-veg">Veg</span>' : ''}
-              </div>
-            </div>`;
-        });
-        html += '</div>';
-        document.getElementById('menuContent').innerHTML = html;
-        renderQuickHint(data);
-      })
-      .catch(() => {
-        setStatus(false);
-        document.getElementById('menuContent').innerHTML = '<div class="empty">Cannot connect to server at localhost:5000</div>';
-      });
-  }
+// ── TABS ───────────────────────────────────────
+function switchTab(name) {
+  const names = ['menu','tables','order','orders'];
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('active', names[i] === name));
+  document.querySelectorAll('.section').forEach((s,i) =>
+    s.classList.toggle('active', 'tab-'+names[i] === 'tab-'+name));
+  if (name === 'tables') loadTables();
+  if (name === 'orders') loadOrders();
+}
 
-  function renderQuickHint(data) {
-    let html = '';
-    data.slice(0, 6).forEach(item => {
-      html += `
-        <div class="menu-item" onclick="selectItem(${item.item_id})">
-          <div class="item-id">ID · ${item.item_id}</div>
-          <div class="item-name">${item.item_name}</div>
-          <div class="item-footer">
-            <span class="item-price">₹${parseFloat(item.price).toFixed(2)}</span>
-            ${item.is_vegetarian ? '<span class="badge-veg">Veg</span>' : ''}
-          </div>
-        </div>`;
-    });
-    document.getElementById('quickMenuHint').innerHTML = html;
-  }
-
-  function selectItem(id) {
-    document.getElementById('item_id').value = id;
-    previewItem();
-    switchTab('order');
-  }
-
-  function previewItem() {
-    const id = parseInt(document.getElementById('item_id').value);
-    const item = menuData.find(i => i.item_id === id);
-    const prev = document.getElementById('selectedPreview');
-    if (item) {
-      prev.style.display = 'block';
-      prev.textContent = '✓  ' + item.item_name + '  ·  ₹' + parseFloat(item.price).toFixed(2) + '  (ID: ' + id + ')';
-    } else {
-      prev.style.display = 'none';
-    }
-  }
-
-  function changeQty(d) {
-    qty = Math.max(1, qty + d);
-    document.getElementById('qtyVal').textContent = qty;
-  }
-
-  function placeOrder() {
-    const table_id = document.getElementById('table_id').value;
-    const item_id  = document.getElementById('item_id').value;
-    const msgEl    = document.getElementById('orderMsg');
-    if (!table_id || !item_id) {
-      msgEl.innerHTML = '<div class="msg-error">Please fill in Table Number and Item ID.</div>';
-      return;
-    }
-    msgEl.innerHTML = '<div class="loading">Placing order</div>';
-    fetch(API + '/order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ table_id, item_id, quantity: qty })
-    })
+// ── MENU ───────────────────────────────────────
+function loadMenu() {
+  document.getElementById('menuContent').innerHTML = '<div class="loading">Loading...</div>';
+  fetch(API + '/menu')
     .then(r => r.json())
     .then(data => {
-      if (data.error) {
-        msgEl.innerHTML = '<div class="msg-error">' + data.error + '</div>';
-      } else {
-        msgEl.innerHTML = '<div class="msg-success">✓ ' + (data.message || 'Order placed successfully!') + '</div>';
-        document.getElementById('table_id').value = '';
-        document.getElementById('item_id').value = '';
-        document.getElementById('selectedPreview').style.display = 'none';
-        qty = 1;
-        document.getElementById('qtyVal').textContent = '1';
+      menuData = data;
+      if (!data.length) {
+        document.getElementById('menuContent').innerHTML =
+          '<div class="empty">No menu items found.</div>';
+        return;
       }
+      document.getElementById('menuContent').innerHTML = buildMenuGrid(data);
+      document.getElementById('quickMenu').innerHTML   = buildMenuGrid(data.slice(0,6));
     })
-    .catch(() => msgEl.innerHTML = '<div class="msg-error">Failed to connect to server.</div>');
-  }
+    .catch(() => {
+      document.getElementById('menuContent').innerHTML =
+        '<div class="empty">Cannot connect to server.</div>';
+    });
+}
 
-  function loadOrders() {
-    document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading orders</div>';
-    fetch(API + '/orders')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.length) {
-          document.getElementById('ordersContent').innerHTML = '<div class="empty">No orders yet.</div>';
-          return;
-        }
-        let html = '<div class="orders-list">';
-        data.forEach(o => {
-          const st = o.status || 'pending';
-          html += `
-            <div class="order-card ${st}">
-              <div class="order-num">#${o.order_id}</div>
-              <div class="order-info">
-                <div class="order-name">${o.item_name || 'Unknown item'}</div>
-                <div class="order-meta">Table ${o.table_id} &nbsp;·&nbsp; Qty: ${o.quantity}</div>
-              </div>
-              <div style="text-align:right">
-                <div class="order-amount">₹${parseFloat(o.total_amount || 0).toFixed(2)}</div>
-                <div><span class="status status-${st}">${st}</span></div>
-              </div>
-            </div>`;
-        });
-        html += '</div>';
-        document.getElementById('ordersContent').innerHTML = html;
-      })
-      .catch(() => {
-        document.getElementById('ordersContent').innerHTML = '<div class="empty">Cannot load orders. Is the server running?</div>';
+function buildMenuGrid(data) {
+  let html = '<div class="menu-grid">';
+  data.forEach(item => {
+    html += `
+      <div class="menu-item" id="mi-${item.item_id}" onclick="selectItem(${item.item_id})">
+        <div class="item-cat">${item.category_name}</div>
+        <div class="item-id">ID: ${item.item_id}</div>
+        <div class="item-name">${item.item_name}</div>
+        <div class="item-desc">${item.description || ''}</div>
+        <div class="item-foot">
+          <span class="item-price">&#8377;${parseFloat(item.price).toFixed(2)}</span>
+          <span class="item-prep">${item.preparation_time}m</span>
+        </div>
+        <span class="badge ${item.is_vegetarian ? 'badge-veg':'badge-nveg'}">
+          ${item.is_vegetarian ? 'Veg':'Non-veg'}
+        </span>
+      </div>`;
+  });
+  return html + '</div>';
+}
+
+// ── TABLES ─────────────────────────────────────
+function loadTables() {
+  document.getElementById('tablesContent').innerHTML = '<div class="loading">Loading...</div>';
+  fetch(API + '/tables')
+    .then(r => r.json())
+    .then(data => {
+      const colors = { available:'#66bb6a', occupied:'#ef5350',
+                       reserved:'#ffa726',  maintenance:'#888' };
+      let html = '<div class="table-grid">';
+      data.forEach(t => {
+        html += `
+          <div class="table-card t-${t.status}">
+            <div class="table-num">T${t.table_number}</div>
+            <div class="table-cap">${t.capacity} seats</div>
+            <div class="table-loc">${t.location}</div>
+            <div class="table-stat" style="color:${colors[t.status]||'#888'}">
+              ${t.status}
+            </div>
+          </div>`;
       });
-  }
+      html += '</div>';
+      document.getElementById('tablesContent').innerHTML = html;
+    });
+}
 
-  loadMenu();
+// ── ORDER ──────────────────────────────────────
+function selectItem(id) {
+  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('sel'));
+  document.querySelectorAll('#mi-' + id).forEach(el => el.classList.add('sel'));
+  document.getElementById('item_id').value = id;
+  previewItem();
+  switchTab('order');
+}
+
+function previewItem() {
+  const id   = parseInt(document.getElementById('item_id').value);
+  const item = menuData.find(i => i.item_id === id);
+  const box  = document.getElementById('previewBox');
+  if (item) {
+    box.style.display = 'block';
+    box.innerHTML = `<b>${item.item_name}</b> &nbsp;|&nbsp;
+      &#8377;${parseFloat(item.price).toFixed(2)} &nbsp;|&nbsp;
+      ${item.preparation_time} min &nbsp;|&nbsp;
+      <span class="badge ${item.is_vegetarian?'badge-veg':'badge-nveg'}">
+        ${item.is_vegetarian?'Veg':'Non-veg'}</span>`;
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function changeQty(d) {
+  qty = Math.max(1, qty + d);
+  document.getElementById('qtyVal').textContent = qty;
+}
+
+function placeOrder() {
+  const table_id = document.getElementById('table_id').value;
+  const item_id  = document.getElementById('item_id').value;
+  const msgEl    = document.getElementById('orderMsg');
+  if (!table_id || !item_id) {
+    msgEl.innerHTML = '<div class="msg-err">Please enter Table Number and Item ID.</div>';
+    return;
+  }
+  msgEl.innerHTML = '<div class="loading">Placing order...</div>';
+  fetch(API + '/order', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ table_id, item_id, quantity: qty })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) {
+      msgEl.innerHTML = '<div class="msg-err">' + data.error + '</div>';
+    } else {
+      msgEl.innerHTML = '<div class="msg-ok">&#10003; ' + data.message +
+        ' &nbsp;|&nbsp; Total: &#8377;' + parseFloat(data.total).toFixed(2) + '</div>';
+      document.getElementById('table_id').value = '';
+      document.getElementById('item_id').value  = '';
+      document.getElementById('previewBox').style.display = 'none';
+      qty = 1;
+      document.getElementById('qtyVal').textContent = '1';
+    }
+  })
+  .catch(() => msgEl.innerHTML = '<div class="msg-err">Failed to connect to server.</div>');
+}
+
+// ── ORDERS ─────────────────────────────────────
+function loadOrders() {
+  document.getElementById('ordersContent').innerHTML = '<div class="loading">Loading...</div>';
+  fetch(API + '/orders')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.length) {
+        document.getElementById('ordersContent').innerHTML =
+          '<div class="empty">No orders yet.</div>';
+        return;
+      }
+      let html = '';
+      data.forEach(o => {
+        const st  = o.status || 'pending';
+        const tax = parseFloat(o.tax_amount || 0).toFixed(2);
+        const isPaid = st === 'completed' || st === 'paid';
+        html += `
+          <div class="order-card">
+            <div class="order-id">#${o.order_id}</div>
+            <div class="order-info">
+              <div class="order-name">${o.item_name || 'Unknown'}</div>
+              <div class="order-meta">
+                Table ${o.table_id} &nbsp;·&nbsp; Qty: ${o.quantity}
+                &nbsp;·&nbsp; &#8377;${parseFloat(o.unit_price||0).toFixed(2)} each
+              </div>
+              <span class="status s-${st}">${st.toUpperCase()}</span>
+            </div>
+            <div class="order-right">
+              <div class="order-amt">&#8377;${parseFloat(o.total_amount||0).toFixed(2)}</div>
+              <div class="order-tax">+&#8377;${tax} tax</div>
+              ${!isPaid ? `
+                <button class="btn btn-green btn-sm" style="margin-top:8px"
+                  onclick="openPayModal(${o.order_id},
+                    '${o.item_name}', ${o.quantity},
+                    ${o.unit_price||0}, ${o.total_amount||0},
+                    ${o.tax_amount||0}, ${o.table_id})">
+                  💳 Pay
+                </button>` : `
+                <button class="btn btn-sm" style="margin-top:8px;color:#c9a227"
+                  onclick="showBill(${o.order_id},
+                    '${o.item_name}', ${o.quantity},
+                    ${o.unit_price||0}, ${o.total_amount||0},
+                    ${o.tax_amount||0}, ${o.table_id})">
+                  🧾 Bill
+                </button>`}
+            </div>
+          </div>`;
+      });
+      document.getElementById('ordersContent').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('ordersContent').innerHTML =
+        '<div class="empty">Cannot load orders.</div>';
+    });
+}
+
+// ── PAYMENT MODAL ──────────────────────────────
+function openPayModal(order_id, item_name, quantity, unit_price, total, tax, table_id) {
+  payOrderId = order_id;
+  payMethod  = null;
+  payData    = { order_id, item_name, quantity, unit_price, total, tax, table_id };
+
+  document.querySelectorAll('.pay-method').forEach(el => el.classList.remove('selected'));
+  document.getElementById('payMsg').innerHTML = '';
+
+  const subtotal = parseFloat(total) - parseFloat(tax);
+
+  document.getElementById('billDetails').innerHTML = `
+    <div class="bill-row"><span>Order</span><span>#${order_id}</span></div>
+    <div class="bill-row"><span>Table</span><span>${table_id}</span></div>
+    <div class="bill-row"><span>${item_name} x${quantity}</span>
+      <span>&#8377;${(unit_price * quantity).toFixed(2)}</span></div>
+    <div class="bill-row"><span>Tax (5%)</span>
+      <span>&#8377;${parseFloat(tax).toFixed(2)}</span></div>
+    <div class="bill-total">
+      <span>Total</span><span>&#8377;${parseFloat(total).toFixed(2)}</span>
+    </div>`;
+
+  document.getElementById('payModal').style.display = 'flex';
+}
+
+function closePayModal() {
+  document.getElementById('payModal').style.display = 'none';
+}
+
+function selectMethod(el, method) {
+  document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  payMethod = method;
+}
+
+function confirmPayment() {
+  if (!payMethod) {
+    document.getElementById('payMsg').innerHTML =
+      '<div class="msg-err" style="margin-top:10px">Please select a payment method.</div>';
+    return;
+  }
+  document.getElementById('payMsg').innerHTML =
+    '<div class="loading">Processing payment...</div>';
+
+  fetch(API + '/order/' + payOrderId + '/status', {
+    method:  'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ status: 'completed' })
+  })
+  .then(r => r.json())
+  .then(() => {
+    closePayModal();
+    showBill(
+      payData.order_id, payData.item_name, payData.quantity,
+      payData.unit_price, payData.total, payData.tax,
+      payData.table_id, payMethod
+    );
+    loadOrders();
+  })
+  .catch(() => {
+    document.getElementById('payMsg').innerHTML =
+      '<div class="msg-err" style="margin-top:10px">Payment failed. Try again.</div>';
+  });
+}
+
+// ── BILL RECEIPT ───────────────────────────────
+function showBill(order_id, item_name, quantity, unit_price, total, tax, table_id, method) {
+  const now      = new Date();
+  const dateStr  = now.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  const timeStr  = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+  const subtotal = (parseFloat(total) - parseFloat(tax)).toFixed(2);
+  const methodLabel = {
+    cash:'Cash', credit_card:'Credit Card', upi:'UPI', wallet:'Wallet'
+  }[method] || 'Paid';
+
+  document.getElementById('receiptContent').innerHTML = `
+    <div class="receipt">
+      <div class="receipt-head">
+        <h2>🍽️ Restaurant</h2>
+        <p>Management System</p>
+        <p>${dateStr} &nbsp; ${timeStr}</p>
+      </div>
+      <hr class="receipt-divider">
+      <div class="receipt-row"><span>Order #</span><span>${order_id}</span></div>
+      <div class="receipt-row"><span>Table</span><span>${table_id}</span></div>
+      <hr class="receipt-divider">
+      <div class="receipt-row">
+        <span>${item_name} x${quantity}</span>
+        <span>&#8377;${(unit_price * quantity).toFixed(2)}</span>
+      </div>
+      <div class="receipt-row"><span>Subtotal</span><span>&#8377;${subtotal}</span></div>
+      <div class="receipt-row"><span>Tax (5%)</span><span>&#8377;${parseFloat(tax).toFixed(2)}</span></div>
+      <hr class="receipt-divider">
+      <div class="receipt-total">
+        <span>TOTAL</span><span>&#8377;${parseFloat(total).toFixed(2)}</span>
+      </div>
+      <hr class="receipt-divider">
+      <div class="receipt-row"><span>Payment</span><span>${methodLabel}</span></div>
+      <div class="receipt-foot">
+        <p>Thank you for dining with us!</p>
+        <p>Visit again soon 🙏</p>
+      </div>
+    </div>`;
+
+  document.getElementById('billModal').style.display = 'flex';
+}
+
+function closeBillModal() {
+  document.getElementById('billModal').style.display = 'none';
+}
 </script>
 </body>
 </html>
